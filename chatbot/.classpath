@@ -24,6 +24,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/conections"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/connections"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
