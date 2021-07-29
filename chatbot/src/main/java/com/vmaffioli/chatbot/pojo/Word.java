@@ -4,29 +4,26 @@ public class Word {
 
 	private String name;
 	private String fname;
+	private String syllables;
 	private String classes;
-	private String syllables;//
-	private String plural;//
+	private String meaning;
 	private String synonyms;
 	private String antonyms;
-	private String anagrams;
-	private String meaning;
 
 	public Word() {
 		
 	}
 	
-
-	/* GETTERS AND SETTERS */
-
+	
+	
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String word) {
-		this.name = word;
+	public void setName(String name) {
+		this.name = name;
 	}
-	
+
 	public String getFname() {
 		return fname;
 	}
@@ -35,32 +32,48 @@ public class Word {
 		this.fname = fname;
 	}
 
-	public String getClasses() {
-		return classes;
-	}
-
-	public void setClasses(String classes) {
-		this.classes = classes;
-	}
-
 	public String getSyllables() {
 		return syllables;
+	}
+	
+	public String[] getSyllablesList() {
+		return syllables.split("·");
 	}
 
 	public void setSyllables(String syllables) {
 		this.syllables = syllables;
 	}
 
-	public String getPlural() {
-		return plural;
+	public String getClasses() {
+		return classes;
+	}
+	
+	public String[] getClassesList() {
+		return classes.split(" ");
 	}
 
-	public void setPlural(String plural) {
-		this.plural = plural;
+	public void setClasses(String classes) {
+		this.classes = classes;
+	}
+
+	public String getMeaning() {
+		return meaning;
+	}
+	
+	public String[] getMeaningList() {
+		return meaning.split("[0-9]+");
+	}
+
+	public void setMeaning(String meaning) {
+		this.meaning = meaning;
 	}
 
 	public String getSynonyms() {
 		return synonyms;
+	}
+	
+	public String[] getSynonymsList() {
+		return synonyms.split(" ");
 	}
 
 	public void setSynonyms(String synonyms) {
@@ -70,26 +83,19 @@ public class Word {
 	public String getAntonyms() {
 		return antonyms;
 	}
+	
+	public String[] getAntonymsList() {
+		return antonyms.split(" ");
+	}
 
 	public void setAntonyms(String antonyms) {
 		this.antonyms = antonyms;
 	}
 
-	public String getAnagrams() {
-		return anagrams;
-	}
 
-	public void setAnagrams(String anagrams) {
-		this.anagrams = anagrams;
-	}
+	
 
-	public String getMeaning() {
-		return meaning;
-	}
-
-	public void setMeaning(String meaning) {
-		this.meaning = meaning;
-	}
+	
 
 
 

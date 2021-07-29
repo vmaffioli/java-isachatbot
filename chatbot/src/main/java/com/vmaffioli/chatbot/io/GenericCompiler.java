@@ -14,7 +14,7 @@ import com.vmaffioli.chatbot.pojo.Word;
  */
 public class GenericCompiler {
 
-	Word word = null;
+	private Word word = null;
 
 	public GenericCompiler() {
 	}

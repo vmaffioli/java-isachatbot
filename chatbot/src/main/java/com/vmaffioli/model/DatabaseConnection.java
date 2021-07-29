@@ -59,7 +59,7 @@ public class DatabaseConnection {
 					dotenv.get("CHATBOTDBUSER"), dotenv.get("CHATBOTDBPASSWORD")).getMySQLConn();
 
 			Statement statement = conn.createStatement();
-			statement.executeQuery(query);
+			statement.executeUpdate(query);
 
 		} catch (Exception e) {
 			e.printStackTrace();
