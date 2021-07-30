@@ -21,9 +21,7 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public Word pull(String word) {
 		Word result = new Word();
-		System.out.println(
-				"SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
-						+ " AND fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;");
+	
 		ResultSet queryResult = new DatabaseConnection(
 				"SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
 						+ " AND fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;")
@@ -138,41 +136,35 @@ public class WordDAOImpl implements WordDAO {
 		System.out.println(content.select("*|ra").text());
 
 		// Get extra data (synonyms)
+
+
 		try {
-			content = new ScrapConnection("https://www.sinonimos.com.br/busca.php?q=" + w.trim().toLowerCase())
+			content = new ScrapConnection("https://www.sinonimos.com.br/" + w.trim().toLowerCase())
 					.getResult();
-			word.setSynonyms(content.select(".s-wrapper").select("a").text());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			content = new ScrapConnection(
-					"https://www.sinonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString())
-							.getResult();
-			if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
+			if (content.select("#content").select("h1").text().replace("Sinônimo de ", "").trim()
 					.equals(word.getName())) {
 				word.setSynonyms(content.select(".s-wrapper").select("a").text());
 			} else {
 				word.setSynonyms("");
 			}
-		}
+		} catch (Exception e) {
+			word.setSynonyms("");
+			e.printStackTrace();
+		} 
 
 		// Get extra data (synonyms)
 		try {
-			content = new ScrapConnection("https://www.antonimos.com.br/busca.php?q=" + w.trim().toLowerCase())
+			content = new ScrapConnection("https://www.antonimos.com.br/" + w.trim().toLowerCase())
 					.getResult();
-			word.setSynonyms(content.select(".s-wrapper").select("a").text());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			content = new ScrapConnection(
-					"https://www.antonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString())
-							.getResult();
 			if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
 					.equals(word.getName())) {
 				word.setAntonyms(content.select(".s-wrapper").select("a").text());
 			} else {
 				word.setAntonyms("");
 			}
+		} catch (Exception e) {
+			word.setAntonyms("");
+			e.printStackTrace();
 		}
 
 		push(word);
