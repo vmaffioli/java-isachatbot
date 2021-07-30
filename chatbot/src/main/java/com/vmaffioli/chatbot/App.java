@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import com.vmaffioli.chatbot.io.GenericCompiler;
+import com.vmaffioli.chatbot.pojo.Word;
 import com.vmaffioli.connections.ConnectionProvider;
 
 /**
@@ -30,10 +33,17 @@ public class App {
 
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);	
-		String input = sc.nextLine();
+		String input[] = sc.nextLine().split(" ");
 		
-		new GenericCompiler().StringToWord(input);
+		List<Word> phrase = new ArrayList<Word>();
 		
+		for(String w : input) {
+			phrase.add(new GenericCompiler().StringToWord(w));
+		}
+		
+		for(Word w : phrase) {
+			System.out.println(w.getName());
+		}
 
 	}
 

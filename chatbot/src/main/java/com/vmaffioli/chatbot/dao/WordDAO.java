@@ -7,5 +7,5 @@ public interface WordDAO {
 	public Word pull(String word);
 	public void push(Word word);
 	public boolean ping(String word);
-	public void fill(String word);
+	public Word fill(String word);
 }

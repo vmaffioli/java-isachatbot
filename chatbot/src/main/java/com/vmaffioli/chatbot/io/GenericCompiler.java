@@ -25,7 +25,7 @@ public class GenericCompiler {
 		if(new WordDAOImpl().ping(input.trim())) {
 			word = new WordDAOImpl().pull(input.trim());
 		} else {
-			new WordDAOImpl().fill(input.trim());
+			word = new WordDAOImpl().fill(input.trim());
 			//word = new WordDAOImpl().pull(input.trim());
 		}
 		
