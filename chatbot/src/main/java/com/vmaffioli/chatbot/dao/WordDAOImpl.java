@@ -21,7 +21,8 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public Word pull(String word) {
 		Word result = new Word();
-		System.out.println("SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
+		System.out.println(
+				"SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
 						+ " AND fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;");
 		ResultSet queryResult = new DatabaseConnection(
 				"SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
@@ -29,19 +30,38 @@ public class WordDAOImpl implements WordDAO {
 								.getQueryResult();
 
 		try {
-			while(queryResult.next()) {
-			result.setName(queryResult.getString("nfname"));
-			result.setFname(queryResult.getString("fname"));
-			result.setSyllables(queryResult.getString("syllables"));
-			result.setClasses(queryResult.getString("classes"));
-			result.setMeaning(queryResult.getString("meaning"));
-			result.setSynonyms(queryResult.getString("synonyms"));
-			result.setAntonyms(queryResult.getString("antonyms"));
+			while (queryResult.next()) {
+				result.setName(queryResult.getString("nfname"));
+				result.setFname(queryResult.getString("fname"));
+				result.setSyllables(queryResult.getString("syllables"));
+				result.setClasses(queryResult.getString("classes"));
+				result.setMeaning(queryResult.getString("meaning"));
+				result.setSynonyms(queryResult.getString("synonyms"));
+				result.setAntonyms(queryResult.getString("antonyms"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			queryResult = new DatabaseConnection(
+					"SELECT * FROM learned_words WHERE fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;")
+									.getQueryResult();
+		}
+		try {
+			while (queryResult.next()) {
+				result.setName(queryResult.getString("nfname"));
+				result.setFname(queryResult.getString("fname"));
+				result.setSyllables(queryResult.getString("syllables"));
+				result.setClasses(queryResult.getString("classes"));
+				result.setMeaning(queryResult.getString("meaning"));
+				result.setSynonyms(queryResult.getString("synonyms"));
+				result.setAntonyms(queryResult.getString("antonyms"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		return result;
 	}
 
@@ -63,10 +83,9 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public boolean ping(String word) {
 		boolean result = false;
-		ResultSet queryResult = new DatabaseConnection(
-				"SELECT count(1) FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
-						+ " AND fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;")
-								.getQueryResult();
+		ResultSet queryResult = new DatabaseConnection("SELECT count(1) FROM learned_words WHERE nfname = '"
+				+ word.trim().toLowerCase() + "' collate utf8mb4_bin" + " AND fname = '"
+				+ new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;").getQueryResult();
 		try {
 			while (queryResult.next()) {
 				if (queryResult.getInt(1) == 1) {
@@ -79,6 +98,23 @@ public class WordDAOImpl implements WordDAO {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if(!result) {
+			queryResult = new DatabaseConnection("SELECT count(1) FROM learned_words WHERE fname = '"
+					+ new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;").getQueryResult();
+			try {
+				while (queryResult.next()) {
+					if (queryResult.getInt(1) == 1) {
+						result = true;
+					} else if (queryResult.getInt(1) > 1) {
+						result = true;
+						System.out.println("ADD VALIDACAO PRA MULTIPLOS RETORNOS2");
+					}
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return result;
 	}
@@ -93,8 +129,7 @@ public class WordDAOImpl implements WordDAO {
 
 		// Get data from online dictionary
 		Document content = new ScrapConnection(
-				"https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=" + w.trim().toLowerCase())
-						.getResult();
+				"https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=" + w.trim().toLowerCase()).getResult();
 		word.setName(content.select("#content").select("e1").text());
 		word.setFname(new FormatSimplifier(content.select("#content").select("e1").text()).getString());
 		word.setSyllables(content.select("#content").select("es").text().replace("·", ","));
@@ -104,32 +139,44 @@ public class WordDAOImpl implements WordDAO {
 
 		// Get extra data (synonyms)
 		try {
-		content = new ScrapConnection(
-				"https://www.sinonimos.com.br/busca.php?q=" + w.trim().toLowerCase()).getResult();
-		word.setSynonyms(content.select(".s-wrapper").select("a").text());
-		} catch(Exception e) {
+			content = new ScrapConnection("https://www.sinonimos.com.br/busca.php?q=" + w.trim().toLowerCase())
+					.getResult();
+			word.setSynonyms(content.select(".s-wrapper").select("a").text());
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			content = new ScrapConnection(
-					"https://www.sinonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString()).getResult();
-			word.setSynonyms(content.select(".s-wrapper").select("a").text());
+					"https://www.sinonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString())
+							.getResult();
+			if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
+					.equals(word.getName())) {
+				word.setSynonyms(content.select(".s-wrapper").select("a").text());
+			} else {
+				word.setSynonyms("");
+			}
 		}
 
 		// Get extra data (synonyms)
 		try {
-		content = new ScrapConnection(
-				"https://www.antonimos.com.br/busca.php?q=" + w.trim().toLowerCase()).getResult();
-		word.setSynonyms(content.select(".s-wrapper").select("a").text());
-		} catch(Exception e) {
+			content = new ScrapConnection("https://www.antonimos.com.br/busca.php?q=" + w.trim().toLowerCase())
+					.getResult();
+			word.setSynonyms(content.select(".s-wrapper").select("a").text());
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			content = new ScrapConnection(
-					"https://www.antonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString()).getResult();
-			word.setAntonyms(content.select(".s-wrapper").select("a").text());
+					"https://www.antonimos.com.br/busca.php?q=" + new FormatSimplifier(word.getName()).getString())
+							.getResult();
+			if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
+					.equals(word.getName())) {
+				word.setAntonyms(content.select(".s-wrapper").select("a").text());
+			} else {
+				word.setAntonyms("");
+			}
 		}
 
 		push(word);
-		return  word;
+		return word;
 	}
 
 }
