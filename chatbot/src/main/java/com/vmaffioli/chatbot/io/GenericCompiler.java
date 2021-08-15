@@ -2,7 +2,6 @@ package com.vmaffioli.chatbot.io;
 
 
 import com.vmaffioli.chatbot.dao.WordDAOImpl;
-import com.vmaffioli.chatbot.pojo.Phrase;
 import com.vmaffioli.chatbot.pojo.Word;
 
 /**

@@ -80,6 +80,14 @@ public class Word {
 		this.synonyms = synonyms;
 	}
 
+	@Override
+	public String toString() {
+		return "Word [name=" + name + ", fname=" + fname + ", syllables=" + syllables + ", classes=" + classes
+				+ ", meaning=" + meaning + ", synonyms=" + synonyms + ", antonyms=" + antonyms + "]";
+	}
+
+
+
 	public String getAntonyms() {
 		return antonyms;
 	}

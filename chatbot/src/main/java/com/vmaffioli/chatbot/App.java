@@ -38,11 +38,14 @@ public class App {
 		List<Word> phrase = new ArrayList<Word>();
 		
 		for(String w : input) {
-			phrase.add(new GenericCompiler().StringToWord(w));
+			Word word = new GenericCompiler().StringToWord(w);
+			if(word.getName()!=null) {
+				phrase.add(word);
+			}
 		}
 		
 		for(Word w : phrase) {
-			System.out.println(w.getName());
+			System.out.println(w.toString());
 		}
 
 	}

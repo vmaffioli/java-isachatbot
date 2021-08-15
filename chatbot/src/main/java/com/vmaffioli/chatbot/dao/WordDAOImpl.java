@@ -21,7 +21,7 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public Word pull(String word) {
 		Word result = new Word();
-	
+
 		ResultSet queryResult = new DatabaseConnection(
 				"SELECT * FROM learned_words WHERE nfname = '" + word.trim().toLowerCase() + "' collate utf8mb4_bin"
 						+ " AND fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;")
@@ -41,9 +41,8 @@ public class WordDAOImpl implements WordDAO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			queryResult = new DatabaseConnection(
-					"SELECT * FROM learned_words WHERE fname = '" + new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;")
-									.getQueryResult();
+			queryResult = new DatabaseConnection("SELECT * FROM learned_words WHERE fname = '"
+					+ new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;").getQueryResult();
 		}
 		try {
 			while (queryResult.next()) {
@@ -59,7 +58,7 @@ public class WordDAOImpl implements WordDAO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
 
@@ -81,6 +80,7 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public boolean ping(String word) {
 		boolean result = false;
+		System.out.println(word.toString());
 		ResultSet queryResult = new DatabaseConnection("SELECT count(1) FROM learned_words WHERE nfname = '"
 				+ word.trim().toLowerCase() + "' collate utf8mb4_bin" + " AND fname = '"
 				+ new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;").getQueryResult();
@@ -91,29 +91,14 @@ public class WordDAOImpl implements WordDAO {
 				} else if (queryResult.getInt(1) > 1) {
 					result = true;
 					System.out.println("ADD VALIDACAO PRA MULTIPLOS RETORNOS");
+				} else {
+
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(!result) {
-			queryResult = new DatabaseConnection("SELECT count(1) FROM learned_words WHERE fname = '"
-					+ new FormatSimplifier(word).getString() + "' collate utf8mb4_bin;").getQueryResult();
-			try {
-				while (queryResult.next()) {
-					if (queryResult.getInt(1) == 1) {
-						result = true;
-					} else if (queryResult.getInt(1) > 1) {
-						result = true;
-						System.out.println("ADD VALIDACAO PRA MULTIPLOS RETORNOS2");
-					}
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+
 		return result;
 	}
 
@@ -124,47 +109,62 @@ public class WordDAOImpl implements WordDAO {
 	@Override
 	public Word fill(String w) {
 		Word word = new Word();
-
+		int i;
+		String url;
+		Document content;
 		// Get data from online dictionary
-		Document content = new ScrapConnection(
-				"https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=" + w.trim().toLowerCase()).getResult();
-		word.setName(content.select("#content").select("e1").text());
-		word.setFname(new FormatSimplifier(content.select("#content").select("e1").text()).getString());
-		word.setSyllables(content.select("#content").select("es").text().replace("·", ","));
-		word.setClasses(content.select("#content").select("cg").text());
-		word.setMeaning(content.select(".verbete.bs-component").text().split("1")[1].split("ETIMOLOGIA")[0]);
-		System.out.println(content.select("*|ra").text());
-
-		// Get extra data (synonyms)
-
-
 		try {
-			content = new ScrapConnection("https://www.sinonimos.com.br/" + w.trim().toLowerCase())
-					.getResult();
-			if (content.select("#content").select("h1").text().replace("Sinônimo de ", "").trim()
-					.equals(word.getName())) {
-				word.setSynonyms(content.select(".s-wrapper").select("a").text());
-			} else {
-				word.setSynonyms("");
-			}
-		} catch (Exception e) {
+			content = new ScrapConnection(
+					"https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=" + w.trim().toLowerCase()).getResult();
+			word.setName(content.select("#content").select("e1").text());
+			word.setFname(new FormatSimplifier(content.select("#content").select("e1").text()).getString());
+			word.setSyllables(content.select("#content").select("es").text().replace("·", ","));
+			word.setClasses(content.select("#content").select("cg").text());
+			word.setMeaning(content.select(".verbete.bs-component").text().split("1")[1].split("ETIMOLOGIA")[0]);
 			word.setSynonyms("");
-			e.printStackTrace();
-		} 
+			word.setAntonyms("");
+
+			// System.out.println(content.select("*|ra").text());
+		} catch (Exception e) {
+			System.out.println(e);
+			System.out.println("criar fluxo para verbos");
+		} finally {
+			
+		}
 
 		// Get extra data (synonyms)
-		try {
-			content = new ScrapConnection("https://www.antonimos.com.br/" + w.trim().toLowerCase())
-					.getResult();
-			if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
-					.equals(word.getName())) {
-				word.setAntonyms(content.select(".s-wrapper").select("a").text());
+		i = 1;
+		while (word.getSynonyms().equals("")) {
+			if (i == 1) {
+				url = "https://www.sinonimos.com.br/" + word.getFname();
 			} else {
-				word.setAntonyms("");
+				url = "https://www.sinonimos.com.br/" + word.getFname() + "-" + i;
 			}
-		} catch (Exception e) {
-			word.setAntonyms("");
-			e.printStackTrace();
+			i++;
+			try {
+				content = new ScrapConnection(url).getResult();
+				if (content.select("#content").select("h1").text().replace("Sinônimo de ", "").trim()
+						.equals(word.getName())) {
+					word.setSynonyms(content.select(".s-wrapper").select("a").text());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Get extra data (antonyms)
+		if (word.getSynonyms().equals("")) {
+			try {
+				content = new ScrapConnection("https://www.antonimos.com.br/" + w.trim().toLowerCase()).getResult();
+				if (content.select("#content").select("h1").text().replace("Antônimo de ", "").trim()
+						.equals(word.getName())) {
+					word.setAntonyms(content.select(".s-wrapper").select("a").text());
+				} else {
+					word.setAntonyms("");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		push(word);
