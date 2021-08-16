@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.jsoup.nodes.Document;
 
 import com.vmaffioli.chatbot.io.FormatSimplifier;
+import com.vmaffioli.chatbot.pojo.Verb;
 import com.vmaffioli.chatbot.pojo.Word;
 import com.vmaffioli.model.DatabaseConnection;
 import com.vmaffioli.model.ScrapConnection;
@@ -67,11 +68,15 @@ public class WordDAOImpl implements WordDAO {
 	 */
 	@Override
 	public void push(Word word) {
+		String fVerbs = "" ;
+		for (Verb verb : word.getVerbs()) {
+			fVerbs += " && " + verb.toString();
+		}
 		new DatabaseConnection(
-				"INSERT INTO learned_words (nfname, fname, syllables, classes, meaning, synonyms, antonyms) VALUES ('"
+				"INSERT INTO learned_words (nfname, fname, syllables, classes, meaning, synonyms, antonyms, verbs) VALUES ('"
 						+ word.getName() + "','" + word.getFname() + "','" + word.getSyllables() + "','"
 						+ word.getClasses() + "','" + word.getMeaning() + "','" + word.getSynonyms() + "','"
-						+ word.getAntonyms() + "');");
+						+ word.getAntonyms() + "',"+ fVerbs + "' );");
 	}
 
 	/**
@@ -123,11 +128,12 @@ public class WordDAOImpl implements WordDAO {
 			word.setMeaning(content.select(".verbete.bs-component").text().split("1")[1].split("ETIMOLOGIA")[0]);
 			word.setSynonyms("");
 			word.setAntonyms("");
-
+			word.setVerbs(new Verb());
 			// System.out.println(content.select("*|ra").text());
 		} catch (Exception e) {
 			System.out.println(e);
 			System.out.println("criar fluxo para verbos");
+			//https://conjuga-me.net/verbo-fazer
 		} finally {
 			
 		}
@@ -161,6 +167,23 @@ public class WordDAOImpl implements WordDAO {
 					word.setAntonyms(content.select(".s-wrapper").select("a").text());
 				} else {
 					word.setAntonyms("");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//Get extra data (verbs)
+		if (word.getVerbs().size() == 1) {
+			try {
+				content = new ScrapConnection("https://conjuga-me.net/verbo-" + w.trim().toLowerCase()).getResult();
+				if (content.select(".verb-title").select(".bolder").text().trim()
+						.equals(word.getName())) {
+					word.setAntonyms(content.select(".s-wrapper").select("a").text());
+					System.out.println("sss");
+					//criar scrap dos verbos!!
+				} else {
+					//word.setAntonyms("");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

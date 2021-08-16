@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.vmaffioli.chatbot.io.GenericCompiler;
+import com.vmaffioli.chatbot.pojo.Verb;
 import com.vmaffioli.chatbot.pojo.Word;
 import com.vmaffioli.connections.ConnectionProvider;
 
@@ -26,6 +27,7 @@ public class App {
 		//System.out.println(validateLogin());
 		
 		//System.out.println(new ConnectionProvider("https://www.google.com/").getURLConn());
+		
 		
 		
 		

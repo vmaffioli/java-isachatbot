@@ -1,5 +1,8 @@
 package com.vmaffioli.chatbot.pojo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Word {
 
 	private String name;
@@ -9,12 +12,23 @@ public class Word {
 	private String meaning;
 	private String synonyms;
 	private String antonyms;
+	private List<Verb> verbs;
+
+
 
 	public Word() {
-		
+		verbs = new ArrayList<Verb>();
 	}
 	
 	
+	
+	public List<Verb> getVerbs() {
+		return verbs;
+	}
+
+	public void setVerbs(Verb verb) {
+		this.verbs.add(verb);
+	}
 	
 	public String getName() {
 		return name;
